@@ -1,18 +1,32 @@
 #include "Train.h"
 #include<iostream>
 #include<Windows.h>
+#include<queue>
 class System {
 	public:
 	Train* head;
 	Train* tail;
-	DWORD cancelled_seat = 0;
+	Train* middlepointer;
+	Train* leftpointer;
+	Train* rightpointer;
+	DWORD leftside = 0;
+	DWORD rightside = 0;
+	 bool isleft = 0;
+	 static DWORD leftmin;
+	 static DWORD rightmax;
+	 static DWORD totalseats;
+	 static DWORD middleseat;
+	 std::queue<Train*>cancelledseats;
 	System() {
 		head = NULL;
 		tail = NULL;
+		middlepointer = NULL;
+		leftpointer = NULL;
+		rightpointer = NULL;
 	}
 	void addseats();
-	bool show_unbooked_seats();
-	void addticket(Ticket *ticket,DWORD seat_num);
+	void changeseatsettings();
+	void findmiddleticket();
 	void bookticket();
 	void cancelticket();
 };

@@ -3,6 +3,10 @@
 #include<Windows.h>
 #include <iomanip>
 #include <ios>
+DWORD System::totalseats = 50;
+DWORD System::middleseat = 25;
+DWORD System::leftmin = 0;
+DWORD System::rightmax = 51;
 
 void System::addseats() {
 	if (head == NULL) {
@@ -22,79 +26,96 @@ void System::addseats() {
 		tail = trainobj;
 	}
 }
-bool System::show_unbooked_seats() {
+
+void System::findmiddleticket() {
 	Train* temp = head;
-	
-	bool availseats = 0;
-	if (head == NULL) {
-		std::cout << "No seats available" << std::endl;
-		return availseats;
-	}
-	std::cout << "Available seats:" << std::endl;
+	DWORD count = 1;
 	while (temp != NULL) {
-		if (temp->train_seat->is_booked == 0) {
-			std::cout << temp->train_seat->seat_number << std::setw(10);
-			availseats = 1;
+
+		if (count == middleseat) {
+			middlepointer = temp;
+			leftpointer = temp->prev_seat;
+			rightpointer = temp->next_seat;
+			leftside = count;
+			rightside = count;
+			break;
 		}
+
 		temp = temp->next_seat;
+		count++;
 	}
-	std::cout << std::endl;
-	return availseats;
+
 }
 
-void System::addticket(Ticket* ticket,DWORD seatnum) {
-	Train* temp = head;
-	DWORD size = 0;
-	while (temp!= NULL) {
-		if (temp->train_seat->seat_number == seatnum) {
-			temp->train_seat->ticket_holder = ticket;
-			temp->train_seat->is_booked = 1;
-			std::cout << "Seats is successfully booked!!" << std::endl;
-			std::cout << std::endl;
-			std::cout << "Ticket no" << std::setw(25) << "Seat number" << std::setw(25) << "passenger name" << std::endl;
-			std::cout << ticket->ticket_id << std::setw(25) << ticket->seat_number << std::setw(25) << ticket->username << std::endl;
-			std::cout << std::endl;
-			
-
-		}
-		temp = temp->next_seat;
-		size++;
-	}
-	if (seatnum > size) {
-		std::cout << "Seat Number " << seatnum << " is no available" << std::endl;
-	}
+void System::changeseatsettings() {
+	totalseats += totalseats;
+	middleseat = totalseats - 25;
+	leftmin = middleseat - 25;
+	rightmax = middleseat + 25 + 1;
 }
 
 void System::bookticket() {
+
+	std::cout << "Enter your name:";
+	char* temp_user_name = new char[256];
+	std::cin >> std::ws;
+	scanf_s("%[^\n]s", temp_user_name, 256);
+	DWORD username_size = strlen(temp_user_name);
+	char* user_name = new char[username_size + 1];
+	strcpy_s(user_name, username_size + 1, temp_user_name);
+	delete[] temp_user_name;
+
+
 	
-	bool availableseats =show_unbooked_seats();
-	if (availableseats) {
-		DWORD booking_seat;
-		if (cancelled_seat == 0) {
-			std::cout << "Enter the seat number you want to book:";
-			std::cin >> booking_seat;
+	if (cancelledseats.empty()) {
+		if (leftside==middleseat && rightside == middleseat) {
+			Ticket* create_ticket = new Ticket(middleseat, user_name);
+			middlepointer->train_seat->ticket_holder = create_ticket;
+			middlepointer->train_seat->is_booked = 1;
+			isleft = 1;
+			leftside = middleseat - 1;
+			rightside = middleseat + 1;
+			std::cout << "Seats is successfully booked!!" << std::endl;
+			std::cout << "Ticket no" << std::setw(25) << "Seat number" << std::setw(25) << "passenger name" << std::endl;
+			std::cout << create_ticket->ticket_id << std::setw(25) << create_ticket->seat_number << std::setw(25) << create_ticket->username << std::endl;
+		   }
+		else if (isleft == 1 && leftside > leftmin) {
+			Ticket* create_ticket = new Ticket(leftside, user_name);
+			leftpointer->train_seat->ticket_holder = create_ticket;
+			leftpointer->train_seat->is_booked = 1;
+			leftpointer = leftpointer->prev_seat;
+			leftside--;
+			isleft = 0;
+			std::cout << "Seats is successfully booked!!" << std::endl;
+			std::cout << "Ticket no" << std::setw(25) << "Seat number" << std::setw(25) << "passenger name" << std::endl;
+			std::cout << create_ticket->ticket_id << std::setw(25) << create_ticket->seat_number << std::setw(25) << create_ticket->username << std::endl;
 		}
-		std::cout << "Enter your name:";
-		char* temp_user_name = new char[256];
-		std::cin >> std::ws;
-		scanf_s("%[^\n]s", temp_user_name, 256);
-		DWORD username_size = strlen(temp_user_name);
-		char* user_name = new char[username_size + 1];
-		strcpy_s(user_name, username_size + 1, temp_user_name);
-		delete[] temp_user_name;
-
-		if (cancelled_seat == 0) {
-			Ticket* create_ticket = new Ticket(booking_seat, user_name);
-			addticket(create_ticket, booking_seat);
-
+		else if (rightside < rightmax || rightside < rightmax && leftside <= leftmin) {
+			Ticket* create_ticket = new Ticket(rightside, user_name);
+			rightpointer->train_seat->ticket_holder = create_ticket;
+			rightpointer->train_seat->is_booked = 1;
+			rightpointer = rightpointer->next_seat;
+			rightside++;
+			isleft = 1;
+			std::cout << "Seats is successfully booked!!" << std::endl;
+			std::cout << "Ticket no" << std::setw(25) << "Seat number" << std::setw(25) << "passenger name" << std::endl;
+			std::cout << create_ticket->ticket_id << std::setw(25) << create_ticket->seat_number << std::setw(25) << create_ticket->username << std::endl;
 		}
 		else {
-			Ticket* create_ticket = new Ticket(cancelled_seat, user_name);
-			addticket(create_ticket, cancelled_seat);
+			std::cout << "Seats are not available to book!!" << std::endl;
 		}
-
 	}
-	
+	else {
+		Train* trainobj = cancelledseats.front();
+		cancelledseats.pop();
+		Ticket* create_ticket = new Ticket(trainobj->train_seat->seat_number, user_name);
+		trainobj->train_seat->ticket_holder = create_ticket;
+		trainobj->train_seat->is_booked = 1;
+		std::cout << "Seats is successfully booked!!" << std::endl;
+		std::cout << "Ticket no" << std::setw(25) << "Seat number" << std::setw(25) << "passenger name" << std::endl;
+		std::cout << create_ticket->ticket_id << std::setw(25) << create_ticket->seat_number << std::setw(25) << create_ticket->username << std::endl;
+			
+	}
 	
  }
 
@@ -117,10 +138,10 @@ void System:: cancelticket() {
 			Seat* seat = temp->train_seat;		
 			if (strcmp(seat->ticket_holder->username,passengername) ==0){
 				temp->train_seat->ticket_holder = NULL;
+				temp->train_seat->is_booked = 0;
 				Ticket* deletedticket = seat->ticket_holder;
 				delete deletedticket;
-				
-				cancelled_seat = cancelseat_num;
+				cancelledseats.push(temp);
 				std::cout << "Ticket cancelled successfully" << std::endl;
 			  }
 			else {

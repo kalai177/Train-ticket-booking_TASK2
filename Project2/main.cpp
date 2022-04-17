@@ -2,6 +2,15 @@
 #include "System.h"
 int main() {
    System *sys = new System();
+   DWORD no_of_seats = 0;
+   no_of_seats = 50;
+
+   while (no_of_seats > 0) {
+       sys->addseats();
+       no_of_seats--;
+   }
+   sys->findmiddleticket();
+   no_of_seats = 50;
    DWORD adminmode;
 begin:
     std::cout << std::endl;
@@ -16,12 +25,17 @@ begin:
         std::cout << "1-createseats:" << std::endl;
         std::cin >> createseats;
         if (createseats == 1) {
-            DWORD num_of_seats;
-            std::cout << "Enter number of seats to be created: ";
-            std::cin >> num_of_seats;
-            while (num_of_seats > 0) {
-                sys->addseats();
-                num_of_seats--;
+            if (sys->rightside < sys->rightmax && sys->cancelledseats.empty()) {
+                std::cout << "Extra berths can't be added !!" << std::endl;
+            }
+            else {
+                
+                while (no_of_seats > 0) {
+                    sys->addseats();
+                    no_of_seats--;
+                }
+                sys->findmiddleticket();
+                sys->changeseatsettings();
             }
         }
         std::cout << "Seats created successfully" << std::endl;
